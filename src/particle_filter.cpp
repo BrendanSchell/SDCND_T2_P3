@@ -12,7 +12,7 @@
 #include <cmath>
 #include "particle_filter.h"
 #include "helper_functions.h"
-
+#include "map"
 using namespace std;
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of 
@@ -117,7 +117,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 		double this_weight = 1.;
 		//convert observations from vehicle coordinate system to map coordinate system
 		for (int i = 0; i < observations.size();i++){
-			observations[i].x += (cos(ptheta) + sin(ptheta));
+			observations[i].x += (cos(ptheta) - sin(ptheta));
 			observations[i].y += (sin(ptheta) + cos(ptheta));
 		}
 		
@@ -144,7 +144,21 @@ void ParticleFilter::resample() {
 	// TODO: Resample particles with replacement with probability proportional to their weight. 
 	// NOTE: You may find std::discrete_distribution helpful here.
 	//   http://en.cppreference.com/w/cpp/numeric/random/discrete_distribution
-
+    
+    // Setup the weights (in this case linearly weighted)
+    std::vector<int> weights;
+    for(int i=0; i<num_particles; i++) {
+        weights.push_back(particles[i].weight);
+    }
+	std::vector<Particle> particles_new;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::discrete_distribution<> d(weights.begin(), weights.end());
+    std::map<int, int> m;
+    for(int n=0; n<num_particles; n++) {
+        particles_new.push_back(particles[d(gen)]);
+    }
+	particles = particles_new;
 }
 
 void ParticleFilter::write(std::string filename) {
