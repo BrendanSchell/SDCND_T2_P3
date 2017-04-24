@@ -99,8 +99,45 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33. Note that you'll need to switch the minus sign in that equation to a plus to account 
 	//   for the fact that the map's y-axis actually points downwards.)
 	//   http://planning.cs.uiuc.edu/node99.html
+	
 
-
+	// loop through each particle
+	for (int p = 0; p < num_particles; p++){
+		double px = particles[p].x;
+		double py = particles[p].y;
+		double ptheta = particles[p].theta;
+		std::vector<LandmarkObs> predicted;
+		
+		for (int l =0; l < map_landmarks.landmark_list.size();l++){
+			if (dist(map_landmarks.landmark_list[l].x_f,map_landmarks.landmark_list[l].y_f,px,py) < sensor_range){
+				predicted.push_back(LandmarkObs {map_landmarks.landmark_list[l].id_i, map_landmarks.landmark_list[l].x_f,map_landmarks.landmark_list[l].y_f});
+			}
+		}
+		// update weights
+		double this_weight = 1.;
+		//convert observations from vehicle coordinate system to map coordinate system
+		for (int i = 0; i < observations.size();i++){
+			observations[i].x += (cos(ptheta) + sin(ptheta));
+			observations[i].y += (sin(ptheta) + cos(ptheta));
+		}
+		
+		//determine nearest landmarks
+		this->dataAssociation(predicted,observations);
+		
+		for (int i = 0; i < observations.size();i++){
+			
+			double landmarkx = map_landmarks.landmark_list[observations[i].id].x_f;
+			double landmarky = map_landmarks.landmark_list[observations[i].id].y_f;
+			double stdx = std_landmark[0];
+			double stdy = std_landmark[1];
+			double stdx2 = pow(stdx,2);
+			double stdy2 = pow(stdy,2);
+			
+			//update weight for each observation
+			this_weight *= (1/(2*M_PI*stdx*stdy)*exp(-1*( pow(px-landmarkx,2)/(2*stdx2)+(pow(py-landmarky,2)/(2*stdy2)))));
+		}
+		particles[p].weight = this_weight;
+	}
 }
 
 void ParticleFilter::resample() {
