@@ -12,11 +12,31 @@
 
 #include "particle_filter.h"
 
+using namespace std;
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
 	// TODO: Set the number of particles. Initialize all particles to first position (based on estimates of 
 	//   x, y, theta and their uncertainties from GPS) and all weights to 1. 
+	// set number of particles
+	num_particles = 10;
+	//initialize all particles to first position
+	
+	for (int i = 0; i < num_particles; i++){
+		Particle this_particle = {i, x, y, theta, 1};
+		particles.push_back(this_particle);
+	}
+	default_random_engine gen;
+
 	// Add random Gaussian noise to each particle.
+	normal_distribution<double> N_x_init(0, std[0]);
+	normal_distribution<double> N_y_init(0, std[1]);
+	normal_distribution<double> N_theta_init(0, std[2]);
+
 	// NOTE: Consult particle_filter.h for more information about this method (and others in this file).
+	for (int i = 0; i < num_particles; i++){
+		particles[i].x += N_x_init(gen);
+		particles[i].y += N_y_init(gen);
+		particles[i].theta += N_theta_init(gen);
+	}	
 
 }
 
