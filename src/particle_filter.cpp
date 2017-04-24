@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-
+#include <cmath>
 #include "particle_filter.h"
 
 using namespace std;
@@ -37,7 +37,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 		particles[i].y += N_y_init(gen);
 		particles[i].theta += N_theta_init(gen);
 	}	
-
+	is_initialized = true;
 }
 
 void ParticleFilter::prediction(double delta_t, double std_pos[], double velocity, double yaw_rate) {
@@ -45,6 +45,25 @@ void ParticleFilter::prediction(double delta_t, double std_pos[], double velocit
 	// NOTE: When adding noise you may find std::normal_distribution and std::default_random_engine useful.
 	//  http://en.cppreference.com/w/cpp/numeric/random/normal_distribution
 	//  http://www.cplusplus.com/reference/random/default_random_engine/
+	default_random_engine gen;
+	normal_distribution<double> N_x(0,std_pos[0]);
+	normal_distribution<double> N_y(0,std_pos[1]);
+	normal_distribution<double> N_theta(0,std_pos[2]);
+
+	// if yaw rate not equal to 0
+	if (yaw_rate != 0){
+		for (int i = 0; i < num_particles; i++){
+			particles[i].x += (velocity/yaw_rate) * (sin(particles[i].theta+yaw_rate*delta_t)-sin(particles[i].theta));
+			//add noise to x 
+			particles[i].x += N_x(gen); 
+			particles[i].y += (velocity/yaw_rate) * (cos(particles[i].theta)-cos(particles[i].theta+yaw_rate*delta_t));
+            //add noise to y
+            particles[i].y += N_y(gen);
+			particles[i].theta += yaw_rate * delta_t;
+			particles[i].theta += N_theta(gen);
+		}
+	}
+
 
 }
 
@@ -53,6 +72,7 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
+	
 
 }
 
