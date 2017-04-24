@@ -11,6 +11,7 @@
 #include <numeric>
 #include <cmath>
 #include "particle_filter.h"
+#include "helper_functions.h"
 
 using namespace std;
 void ParticleFilter::init(double x, double y, double theta, double std[]) {
@@ -72,7 +73,16 @@ void ParticleFilter::dataAssociation(std::vector<LandmarkObs> predicted, std::ve
 	//   observed measurement to this particular landmark.
 	// NOTE: this method will NOT be called by the grading code. But you will probably find it useful to 
 	//   implement this method and use it as a helper during the updateWeights phase.
-	
+	for (int i = 0; i < observations.size(); i++){
+		double smallest_distance =  numeric_limits<double>::max();
+		for (int j = 0; j < predicted.size();j++){
+			double this_dist = dist(observations[i].x,observations[i].y,predicted[j].x,predicted[j].y);
+			if (this_dist < smallest_distance){
+				smallest_distance = this_dist;
+				observations[i].id = predicted[j].id;
+			} 
+		}
+	}	
 
 }
 
@@ -89,6 +99,8 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
 	//   3.33. Note that you'll need to switch the minus sign in that equation to a plus to account 
 	//   for the fact that the map's y-axis actually points downwards.)
 	//   http://planning.cs.uiuc.edu/node99.html
+
+
 }
 
 void ParticleFilter::resample() {
