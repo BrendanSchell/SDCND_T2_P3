@@ -1,9 +1,3 @@
-/*
- * main.cpp
- * Reads in data and runs 2D particle filter.
- *  Created on: Dec 13, 2016
- *      Author: Tiffany Huang
- */
 
 #include <iostream>
 #include <ctime>
@@ -172,5 +166,3 @@ int main() {
 	
 	return 0;
 }
-
-
